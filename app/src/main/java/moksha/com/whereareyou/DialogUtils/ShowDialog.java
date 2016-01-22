@@ -38,4 +38,27 @@ public class ShowDialog {
         dialog.show();
 
     }
+
+    public static void showDialogWithOkButtonOnly(Context context,String title,String message,String okMessage, final int actionID, final CustomDialogInterface dialogInterface){
+
+
+        AlertDialog.Builder builder;
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+            builder = new AlertDialog.Builder(context);
+        }else{
+            builder = new AlertDialog.Builder(context);
+        }
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton(okMessage, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                dialogInterface.handleOkAction(actionID);
+            }
+        });
+
+        AlertDialog dialog= builder.create();
+        dialog.show();
+    }
 }

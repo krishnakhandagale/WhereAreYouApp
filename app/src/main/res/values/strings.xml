@@ -4,4 +4,5 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="where_are_you">Where Are You?</string>
+    <string name="play_service_error">Play services are not iall . Please install them.</string>
 </resources>

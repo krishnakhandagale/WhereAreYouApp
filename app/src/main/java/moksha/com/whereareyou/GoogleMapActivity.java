@@ -14,8 +14,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,7 +40,8 @@ public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCa
     private GoogleMap globalGoogleMap;
 
     //Location manager request location updates by following parameters.
-    private static final long MIN_TIME = 400;
+    private static final
+    long MIN_TIME = 400;
     private static final float MIN_DISTANCE = 500;
 
 
@@ -44,35 +49,46 @@ public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_map);
-        CURRENT_SDK_VERSION= Build.VERSION.SDK_INT;
-        SupportMapFragment mapFragment= (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
-        if(CURRENT_SDK_VERSION>=23){
+        GoogleApiAvailability availability= GoogleApiAvailability.getInstance();
+        int isGooglePlayServiceAvailable=availability.isGooglePlayServicesAvailable(this);
 
-            if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
-                PermissionUtils.requestPermission(this,Manifest.permission.ACCESS_FINE_LOCATION,101,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION});
+        if(isGooglePlayServiceAvailable!= ConnectionResult.SUCCESS){
+            ShowDialog.showDialogWithOkButtonOnly(this,"Error","Google play services is not installed","OK",105,this);
+        }else {
+            this.findViewById(R.id.map).setVisibility(View.VISIBLE);
+            this.findViewById(R.id.playServiceError).setVisibility(View.GONE);
+            this.findViewById(R.id.btnWhereAreYou).setVisibility(View.VISIBLE);
 
-            }else{
-                locationManager= (LocationManager) getSystemService(LOCATION_SERVICE);
+            CURRENT_SDK_VERSION = Build.VERSION.SDK_INT;
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
 
-                if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                    ShowDialog.showDialogWithOkAndCancel(this,"Enable GPS","Please enable GPS to show your current location.","Allow","Cancel",100,GoogleMapActivity.this);
-                }else{
+            if (CURRENT_SDK_VERSION >= 23) {
+
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    PermissionUtils.requestPermission(this, Manifest.permission.ACCESS_FINE_LOCATION, 101, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
+
+                } else {
+                    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        ShowDialog.showDialogWithOkAndCancel(this, "Enable GPS", "Please enable GPS to show your current location.", "Allow", "Cancel", 100, GoogleMapActivity.this);
+                    } else {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, GoogleMapActivity.this);
+                    }
+                }
+            } else {
+
+                locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    ShowDialog.showDialogWithOkAndCancel(this, "Enable GPS", "Please enable GPS to show your current location.", "Allow", "Cancel", 100, GoogleMapActivity.this);
+                } else {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, GoogleMapActivity.this);
                 }
             }
-        }else{
-
-            locationManager= (LocationManager) getSystemService(LOCATION_SERVICE);
-
-            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                ShowDialog.showDialogWithOkAndCancel(this,"Enable GPS","Please enable GPS to show your current location.","Allow","Cancel",100,GoogleMapActivity.this);
-            }else{
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, GoogleMapActivity.this);
-            }
         }
-
 
     }
 
@@ -194,10 +210,17 @@ public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCa
                 }
             }
         }
+        if(actionID==105){
+         this.findViewById(R.id.map).setVisibility(View.GONE);
+         this.findViewById(R.id.playServiceError).setVisibility(View.VISIBLE);
+         this.findViewById(R.id.btnWhereAreYou).setVisibility(View.GONE);
+
+
+        }
+
     }
 
     @Override
     public void handleOnCancelAction(int actionID) {
-
     }
 }
